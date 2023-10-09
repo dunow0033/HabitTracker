@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dgSpecHash": "jNAWdbqMgaLOJBv0zj7h7KIHcbqE71B6HTGRvE+dk0mBiRMUkteHUzPWSPXC0/W7Je699L+47Vm+5Yy8dS6GjA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\bedon\\source\\repos\\HabitTracker\\HabitTracker\\HabitTracker.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\bedon\\.nuget\\packages\\microsoft.data.sqlite\\7.0.11\\microsoft.data.sqlite.7.0.11.nupkg.sha512",
+    "C:\\Users\\bedon\\.nuget\\packages\\microsoft.data.sqlite.core\\7.0.11\\microsoft.data.sqlite.core.7.0.11.nupkg.sha512",
+    "C:\\Users\\bedon\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.4\\sqlitepclraw.bundle_e_sqlite3.2.1.4.nupkg.sha512",
+    "C:\\Users\\bedon\\.nuget\\packages\\sqlitepclraw.core\\2.1.4\\sqlitepclraw.core.2.1.4.nupkg.sha512",
+    "C:\\Users\\bedon\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.4\\sqlitepclraw.lib.e_sqlite3.2.1.4.nupkg.sha512",
+    "C:\\Users\\bedon\\.nuget\\packages\\sqlitepclraw.provider.e_sqlite3\\2.1.4\\sqlitepclraw.provider.e_sqlite3.2.1.4.nupkg.sha512",
+    "C:\\Users\\bedon\\.nuget\\packages\\system.memory\\4.5.3\\system.memory.4.5.3.nupkg.sha512"
+  ],
+  "logs": []
+}
