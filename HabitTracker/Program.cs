@@ -65,8 +65,7 @@ namespace HabitTracker
 						Delete();
 						break;
 					case "4":
-						//Update(connectionString);
-						Console.WriteLine("case 4");
+						Update();
 						break;
 					default:
 						Console.WriteLine("Break point");
@@ -76,37 +75,38 @@ namespace HabitTracker
 
 			static void ViewAll()
 			{
-				Console.Clear();
+				using (var con = new SqliteConnection(connectionString))
+			{
+				con.Open();
 
-				using(SqliteConnection con = new SqliteConnection(connectionString))
+				var tableCmd = con.CreateCommand();
+				tableCmd.CommandText = $"SELECT * FROM drinking_water";
+
+				SqliteDataReader reader = tableCmd.ExecuteReader();
+
+				List<DrinkingWater> entries = new List<DrinkingWater>();
+
+				if (!reader.HasRows)
 				{
-					con.Open();
+					Console.WriteLine("\n\nSorry, no entries to view!!  Add some data first!!");
+					Console.WriteLine("\nPress any key to continue...");
+					Console.ReadKey();
+					GetUserInput();
+				} else {
 
-					var tableCmd = con.CreateCommand();
-					tableCmd.CommandText = $"SELECT * FROM drinking_water";
+						Console.Clear();
 
-					Console.Write("Here are all of your entries:  ");
+						Console.WriteLine("Here is all of your data:  ");
 
-					SqliteDataReader reader = tableCmd.ExecuteReader();
-
-					List<DrinkingWater> entries = new List<DrinkingWater>();
-
-					if (reader.HasRows)
-					{
 						while (reader.Read())
-						{
-							entries.Add(
-							new DrinkingWater
-							{
-								Id = reader.GetInt32(0),
-								Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
-								Quantity = reader.GetInt32(2)
-							});
-						}
-					}
-					else
 					{
-						Console.WriteLine("No rows found");
+						entries.Add(
+						new DrinkingWater
+						{
+							Id = reader.GetInt32(0),
+							Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
+							Quantity = reader.GetInt32(2)
+						});
 					}
 
 					con.Close();
@@ -121,6 +121,7 @@ namespace HabitTracker
 
 				Console.WriteLine("\n\nPress any key to return to the main menu...");
 				Console.ReadKey();
+				}
 			}
 
 			static void Insert()
@@ -155,15 +156,13 @@ namespace HabitTracker
 					var tableCmd = con.CreateCommand();
 					tableCmd.CommandText = $"SELECT * FROM drinking_water";
 
-					
-
 					SqliteDataReader reader = tableCmd.ExecuteReader();
 
 					List<DrinkingWater> entries = new List<DrinkingWater>();
 
 					if (!reader.HasRows)
 					{
-						Console.WriteLine("\n\nSorry, no rows to delete!!  Add some data first!!");
+						Console.WriteLine("\n\nSorry, no entries to delete!!  Add some data first!!");
 						Console.WriteLine("\nPress any key to continue...");
 						Console.ReadKey();
 						GetUserInput();
@@ -206,6 +205,80 @@ namespace HabitTracker
 
 					tableCmd.CommandText =
 						$"DELETE from drinking_water WHERE Id = '{id}'";
+
+					int rowCount = tableCmd.ExecuteNonQuery();
+
+					if (rowCount == 0)
+					{
+						Console.WriteLine($"\n\nRecord with Id {id} doesn't exist. \n\n");
+						Delete();
+					}
+
+					connection.Close();
+				}
+			}
+
+			static void Update()
+			{
+				using (var con = new SqliteConnection(connectionString))
+				{
+					con.Open();
+
+					var tableCmd = con.CreateCommand();
+					tableCmd.CommandText = $"SELECT * FROM drinking_water";
+
+					SqliteDataReader reader = tableCmd.ExecuteReader();
+
+					List<DrinkingWater> entries = new List<DrinkingWater>();
+
+					if (!reader.HasRows)
+					{
+						Console.WriteLine("\n\nSorry, no entries to edit!!  Add some data first!!");
+						Console.WriteLine("\nPress any key to continue...");
+						Console.ReadKey();
+						GetUserInput();
+					}
+					else
+					{
+						Console.Clear();
+
+						Console.Write("Very good, here are all of your entries:  ");
+
+						while (reader.Read())
+						{
+							entries.Add(
+							new DrinkingWater
+							{
+								Id = reader.GetInt32(0),
+								Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
+								Quantity = reader.GetInt32(2)
+							});
+						}
+
+						con.Close();
+					}
+
+					Console.WriteLine("------------------------------------------\n");
+					foreach (var entry in entries)
+					{
+						Console.WriteLine($"{entry.Id} - {entry.Date.ToString("dd-MM-yyyy")} - Quantity: {entry.Quantity}");
+					}
+					Console.WriteLine("------------------------------------------\n");
+				}
+
+				Console.Write("\n\nWhich entry would you like to edit? ");
+				var id = Console.ReadLine();
+
+				Console.Write("\n\nAnd what would you like to change the Quantity to? ");
+				var quantity = Console.ReadLine();
+
+				using(var connection = new SqliteConnection(connectionString))
+				{
+					connection.Open();
+					var tableCmd = connection.CreateCommand();
+
+					tableCmd.CommandText =
+						$"UPDATE drinking_water SET Quantity = '{quantity}' WHERE Id = '{id}'";
 
 					int rowCount = tableCmd.ExecuteNonQuery();
 
