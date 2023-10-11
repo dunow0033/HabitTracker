@@ -36,7 +36,7 @@ namespace HabitTracker
 			bool closeApp = false;
 			while (closeApp == false)
 			{
-				//Console.Clear();
+				Console.Clear();
 				Console.WriteLine("\nMAIN MENU");
 				Console.WriteLine("\n\nWhat would you like to do?");
 				Console.WriteLine("\n0. Close the app");
@@ -119,8 +119,8 @@ namespace HabitTracker
 					Console.WriteLine("------------------------------------------\n");
 				}
 
-				//Console.WriteLine("\n\nPress any key to return to the main menu...");
-				//Console.ReadKey();
+				Console.WriteLine("\n\nPress any key to return to the main menu...");
+				Console.ReadKey();
 			}
 
 			static void Insert()
@@ -148,53 +148,51 @@ namespace HabitTracker
 
 			static void Delete()
 			{
-				//Console.Clear();
+				Console.Clear();
 
-				//using (var con = new SqliteConnection(connectionString))
-				//{
-				//	con.Open();
+				using (var con = new SqliteConnection(connectionString))
+				{
+					con.Open();
 
-				//	var tableCmd = con.CreateCommand();
-				//	tableCmd.CommandText = $"SELECT * FROM drinking_water";
+					var tableCmd = con.CreateCommand();
+					tableCmd.CommandText = $"SELECT * FROM drinking_water";
 
-				//	Console.Write("Very good, here are all of your entries:  ");
+					Console.Write("Very good, here are all of your entries:  ");
 
-				//	SqliteDataReader reader = tableCmd.ExecuteReader();
+					SqliteDataReader reader = tableCmd.ExecuteReader();
 
-				//	List<DrinkingWater> entries = new List<DrinkingWater>();
+					List<DrinkingWater> entries = new List<DrinkingWater>();
 
-				//	if (reader.HasRows)
-				//	{
-				//		while (reader.Read())
-				//		{
-				//			entries.Add(
-				//			new DrinkingWater
-				//			{
-				//				Id = reader.GetInt32(0),
-				//				Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
-				//				Quantity = reader.GetInt32(2)
-				//			});
-				//		}
-				//	}
-				//	else
-				//	{
-				//		Console.WriteLine("No rows found");
-				//	}
+					//if (reader.HasRows)
+					//{
+						while (reader.Read())
+						{
+							entries.Add(
+							new DrinkingWater
+							{
+								Id = reader.GetInt32(0),
+								Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
+								Quantity = reader.GetInt32(2)
+							});
+						}
+					//}
+					//else
+					//{
+					//	Console.WriteLine("No rows found");
+					//}
 
-				//	con.Close();
+					con.Close();
 
-				//	Console.WriteLine("------------------------------------------\n");
-				//	foreach (var entry in entries)
-				//	{
-				//		Console.WriteLine($"{entry.Id} - {entry.Date.ToString("dd-MM-yyyy")} - Quantity: {entry.Quantity}");
-				//	}
-				//	Console.WriteLine("------------------------------------------\n");
-				//}
+					Console.WriteLine("------------------------------------------\n");
+					foreach (var entry in entries)
+					{
+						Console.WriteLine($"{entry.Id} - {entry.Date.ToString("dd-MM-yyyy")} - Quantity: {entry.Quantity}");
+					}
+					Console.WriteLine("------------------------------------------\n");
+				}
 
-				ViewAll();
-
-				Console.WriteLine("\n\nWhich entry would you like to delete? ");
-				var id = Console.Read();
+				Console.Write("\n\nWhich entry would you like to delete? ");
+				var id = Console.ReadLine();
 
 				using (var connection = new SqliteConnection(connectionString))
 				{
@@ -214,8 +212,6 @@ namespace HabitTracker
 
 					connection.Close();
 				}
-
-				GetUserInput();
 			}
 		}
 	}
