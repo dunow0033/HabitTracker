@@ -148,8 +148,6 @@ namespace HabitTracker
 
 			static void Delete()
 			{
-				Console.Clear();
-
 				using (var con = new SqliteConnection(connectionString))
 				{
 					con.Open();
@@ -157,14 +155,25 @@ namespace HabitTracker
 					var tableCmd = con.CreateCommand();
 					tableCmd.CommandText = $"SELECT * FROM drinking_water";
 
-					Console.Write("Very good, here are all of your entries:  ");
+					
 
 					SqliteDataReader reader = tableCmd.ExecuteReader();
 
 					List<DrinkingWater> entries = new List<DrinkingWater>();
 
-					//if (reader.HasRows)
-					//{
+					if (!reader.HasRows)
+					{
+						Console.WriteLine("\n\nSorry, no rows to delete!!  Add some data first!!");
+						Console.WriteLine("\nPress any key to continue...");
+						Console.ReadKey();
+						GetUserInput();
+					}
+					else
+					{
+						Console.Clear();
+
+						Console.Write("Very good, here are all of your entries:  ");
+
 						while (reader.Read())
 						{
 							entries.Add(
@@ -175,13 +184,9 @@ namespace HabitTracker
 								Quantity = reader.GetInt32(2)
 							});
 						}
-					//}
-					//else
-					//{
-					//	Console.WriteLine("No rows found");
-					//}
 
-					con.Close();
+						con.Close();
+					}
 
 					Console.WriteLine("------------------------------------------\n");
 					foreach (var entry in entries)
