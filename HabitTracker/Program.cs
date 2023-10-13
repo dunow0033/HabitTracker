@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using HabitTracker;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
@@ -32,7 +33,7 @@ namespace HabitTracker
 			GetUserInput();
 		}
 
-		static void GetUserInput()
+		public static void GetUserInput()
 		{
 			bool closeApp = false;
 			while (closeApp == false)
@@ -79,59 +80,39 @@ namespace HabitTracker
 
 			public static void ViewAll()
 			{
-				using (var con = new SqliteConnection(connectionString))
+				List<DrinkingWater> entries = new();
+				entries = Database.GetEntries();
+
+				if (entries == null)
 				{
-					con.Open();
-
-					var tableCmd = con.CreateCommand();
-					tableCmd.CommandText = $"SELECT * FROM drinking_water";
-
-					SqliteDataReader reader = tableCmd.ExecuteReader();
-
-					List<DrinkingWater> entries = new List<DrinkingWater>();
-
-					if (!reader.HasRows)
-					{
-						Console.WriteLine("\n\nSorry, no entries to view!!  Add some data first!!");
-						Console.WriteLine("\nPress any key to continue...");
-						Console.ReadKey();
-						GetUserInput();
-					} else {
-
-						Console.Clear();
-						Console.WriteLine("Here is all of your data:  ");
-
-						while (reader.Read())
-						{
-							entries.Add(
-							new DrinkingWater
-							{
-								Id = reader.GetInt32(0),
-								Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
-								Quantity = reader.GetInt32(2)
-							});
-						}
-
-					con.Close();
+					Console.WriteLine("\n\nSorry, no entries to view!!  Add some data first!!");
+					Console.WriteLine("\nPress any key to continue...");
+					Console.ReadKey();
+					GetUserInput();
+				}
+				else
+				{
+					Console.Clear();
+					Console.WriteLine("Here is all of your data:  ");
 
 					Console.WriteLine("------------------------------------------\n");
+
 					foreach (var entry in entries)
 					{
 						Console.WriteLine($"{entry.Id} - {entry.Date.ToString("dd-MM-yyyy")} - Quantity: {entry.Quantity}");
 					}
 					Console.WriteLine("------------------------------------------\n");
 				}
-
+				
 				Console.WriteLine("\n\nPress any key to return to the main menu...");
 				Console.ReadKey();
-				}
 			}
 
 			static void Insert()
 			{
 				Console.Clear();
 
-				Console.Write("How much water did you drink today (whole numbers only, 0 for main menu):  ");
+				Console.Write("How many cups of water did you drink today (whole numbers only, 0 for main menu):  ");
 				var quantity = Console.ReadLine();
 
 				while(!Int32.TryParse(quantity, out _) || Convert.ToInt32(quantity) < 0)
@@ -143,20 +124,11 @@ namespace HabitTracker
 				if (Int32.Parse(quantity) == 0)
 					GetUserInput();
 
-			string date = DateTime.Now.ToString("dd-MM-yyyy");
+				Database.AddEntry(Int32.Parse(quantity));
 
-				using (var connection = new SqliteConnection(connectionString))
-				{
-					connection.Open();
-					var tableCmd = connection.CreateCommand();
+				Console.WriteLine($"{quantity} cups of water successfully put in table. Press any key for main menu...");
+				Console.ReadKey();
 
-					tableCmd.CommandText =
-						$"INSERT INTO drinking_water (date, quantity) VALUES ('{date}', {quantity})";
-
-					tableCmd.ExecuteNonQuery();
-
-					connection.Close();
-				}
 			}
 
 			static void Delete()
