@@ -77,40 +77,40 @@ namespace HabitTracker
 			}
 		}
 
-			static void ViewAll()
+			public static void ViewAll()
 			{
 				using (var con = new SqliteConnection(connectionString))
-			{
-				con.Open();
-
-				var tableCmd = con.CreateCommand();
-				tableCmd.CommandText = $"SELECT * FROM drinking_water";
-
-				SqliteDataReader reader = tableCmd.ExecuteReader();
-
-				List<DrinkingWater> entries = new List<DrinkingWater>();
-
-				if (!reader.HasRows)
 				{
-					Console.WriteLine("\n\nSorry, no entries to view!!  Add some data first!!");
-					Console.WriteLine("\nPress any key to continue...");
-					Console.ReadKey();
-					GetUserInput();
-				} else {
+					con.Open();
 
-					Console.Clear();
-					Console.WriteLine("Here is all of your data:  ");
+					var tableCmd = con.CreateCommand();
+					tableCmd.CommandText = $"SELECT * FROM drinking_water";
 
-					while (reader.Read())
+					SqliteDataReader reader = tableCmd.ExecuteReader();
+
+					List<DrinkingWater> entries = new List<DrinkingWater>();
+
+					if (!reader.HasRows)
 					{
-						entries.Add(
-						new DrinkingWater
+						Console.WriteLine("\n\nSorry, no entries to view!!  Add some data first!!");
+						Console.WriteLine("\nPress any key to continue...");
+						Console.ReadKey();
+						GetUserInput();
+					} else {
+
+						Console.Clear();
+						Console.WriteLine("Here is all of your data:  ");
+
+						while (reader.Read())
 						{
-							Id = reader.GetInt32(0),
-							Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
-							Quantity = reader.GetInt32(2)
-						});
-					}
+							entries.Add(
+							new DrinkingWater
+							{
+								Id = reader.GetInt32(0),
+								Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
+								Quantity = reader.GetInt32(2)
+							});
+						}
 
 					con.Close();
 
@@ -131,19 +131,19 @@ namespace HabitTracker
 			{
 				Console.Clear();
 
-				Console.Write("How much water did you drink today (whole numbers only, 0 to return to main menu):  ");
+				Console.Write("How much water did you drink today (whole numbers only, 0 for main menu):  ");
 				var quantity = Console.ReadLine();
 
-				if (Int32.Parse(quantity) == 0)
-					GetUserInput();
-				
 				while(!Int32.TryParse(quantity, out _) || Convert.ToInt32(quantity) < 0)
 				{
 					Console.WriteLine("\n\nInvalid number.  Please try again: \n");
 					quantity = Console.ReadLine();
 				}
 
-				string date = DateTime.Now.ToString("dd-MM-yyyy");
+				if (Int32.Parse(quantity) == 0)
+					GetUserInput();
+
+			string date = DateTime.Now.ToString("dd-MM-yyyy");
 
 				using (var connection = new SqliteConnection(connectionString))
 				{
@@ -208,18 +208,40 @@ namespace HabitTracker
 					}
 					Console.WriteLine("------------------------------------------\n");
 
-
 					Console.Write("\n\nWhich entry # would you like to delete (0 to return to main menu)? ");
 					var id = Console.ReadLine();
+
+					while (!Int32.TryParse(id, out _) || Convert.ToInt32(id) < 0)
+					{
+						Console.WriteLine("\n\nInvalid number.  Please try again: \n");
+						id = Console.ReadLine();
+					}
 
 					if (Int32.Parse(id) == 0)
 						GetUserInput();
 
+				foreach (var entry in entries)
+				{
+					if (entry.Id == Int32.Parse(id))
+					{
+						found = true;
+						break;
+					}
+				}
+
+				while (!found)
+				{
+					Console.WriteLine($"\n\nSorry, entry #{id} doesn't exist. Please try again (0 for main menu): \n");
+					id = Console.ReadLine();
+
 					while (!Regex.IsMatch(id, @"^\d+$"))
 					{
-						Console.WriteLine("Sorry, digits only, please try again:  \n");
+						Console.WriteLine("Sorry, please enter numbers only: \n");
 						id = Console.ReadLine();
 					}
+
+					if (Int32.Parse(id) == 0)
+						GetUserInput();
 
 					foreach (var entry in entries)
 					{
@@ -229,34 +251,9 @@ namespace HabitTracker
 							break;
 						}
 					}
+				}
 
-					while (!found)
-					{
-						Console.WriteLine($"\n\nSorry, entry #{id} doesn't exist. Please try again (0 for main menu): \n");
-						id = Console.ReadLine();
-
-						if (Int32.Parse(id) == 0)
-							GetUserInput();
-
-						while (!Regex.IsMatch(id, @"^\d+$"))
-						{
-							Console.WriteLine("Sorry, please enter numbers only: \n");
-							id = Console.ReadLine();
-						}
-
-						foreach (var entry in entries)
-						{
-							if (entry.Id == Int32.Parse(id))
-							{
-								found = true;
-								break;
-							}
-						}
-					}
-
-					//using (var connection = new SqliteConnection(connectionString))
-					//{
-					con.Open();
+				con.Open();
 
 					tableCmd.CommandText =
 						$"DELETE from drinking_water WHERE Id = '{id}'";
@@ -271,65 +268,93 @@ namespace HabitTracker
 
 					con.Close();
 
-
 					Console.WriteLine($"\nEntry with Id {id} was successfully deleted!!");
 					Console.WriteLine("\nPress any key to continue...");
 					Console.ReadKey();
 				}
 			}
 
-			static void Update()
+		static void Update()
+		{
+			using (var con = new SqliteConnection(connectionString))
 			{
-				using (var con = new SqliteConnection(connectionString))
+				con.Open();
+
+				bool found = false;
+
+				var tableCmd = con.CreateCommand();
+				tableCmd.CommandText = $"SELECT * FROM drinking_water";
+
+				SqliteDataReader reader = tableCmd.ExecuteReader();
+
+				List<DrinkingWater> entries = new List<DrinkingWater>();
+
+				if (!reader.HasRows)
 				{
-					con.Open();
+					Console.WriteLine("\n\nSorry, no entries to edit!!  Add some data first!!");
+					Console.WriteLine("\nPress any key to continue...");
+					Console.ReadKey();
+					GetUserInput();
+				}
+				else
+				{
+					Console.Clear();
 
-					bool found = false;
+					Console.Write("Very good, here are all of your entries:  ");
 
-					var tableCmd = con.CreateCommand();
-					tableCmd.CommandText = $"SELECT * FROM drinking_water";
-
-					SqliteDataReader reader = tableCmd.ExecuteReader();
-
-					List<DrinkingWater> entries = new List<DrinkingWater>();
-
-					if (!reader.HasRows)
+					while (reader.Read())
 					{
-						Console.WriteLine("\n\nSorry, no entries to edit!!  Add some data first!!");
-						Console.WriteLine("\nPress any key to continue...");
-						Console.ReadKey();
-						GetUserInput();
-					}
-					else
-					{
-						Console.Clear();
-
-						Console.Write("Very good, here are all of your entries:  ");
-
-						while (reader.Read())
+						entries.Add(
+						new DrinkingWater
 						{
-							entries.Add(
-							new DrinkingWater
-							{
-								Id = reader.GetInt32(0),
-								Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
-								Quantity = reader.GetInt32(2)
-							});
-						}
-
-						con.Close();
+							Id = reader.GetInt32(0),
+							Date = DateTime.ParseExact(reader.GetString(1), "dd-MM-yyyy", new CultureInfo("en-US")),
+							Quantity = reader.GetInt32(2)
+						});
 					}
 
-					Console.WriteLine("------------------------------------------\n");
-					foreach (var entry in entries)
+					con.Close();
+				}
+
+				Console.WriteLine("------------------------------------------\n");
+				foreach (var entry in entries)
+				{
+					Console.WriteLine($"{entry.Id} - {entry.Date.ToString("dd-MM-yyyy")} - Quantity: {entry.Quantity}");
+				}
+				Console.WriteLine("------------------------------------------\n");
+
+				Console.Write("\n\nWhich entry would you like to edit? (0 for main menu)");
+
+				var id = Console.ReadLine();
+
+				while (!Int32.TryParse(id, out _) || Convert.ToInt32(id) < 0)
+				{
+					Console.WriteLine("\n\nInvalid number.  Please try again: \n");
+					id = Console.ReadLine();
+				}
+
+				if (Int32.Parse(id) == 0)
+					GetUserInput();
+
+				while (!Regex.IsMatch(id, @"^\d+$"))
+				{
+					Console.WriteLine("Sorry, please enter numbers only: \n");
+					id = Console.ReadLine();
+				}
+
+				foreach (var entry in entries)
+				{
+					if (entry.Id == Int32.Parse(id))
 					{
-						Console.WriteLine($"{entry.Id} - {entry.Date.ToString("dd-MM-yyyy")} - Quantity: {entry.Quantity}");
+						found = true;
+						break;
 					}
-					Console.WriteLine("------------------------------------------\n");
+				}
 
-					Console.Write("\n\nWhich entry would you like to edit? ");
-
-					var id = Console.ReadLine();
+				while (!found)
+				{
+					Console.WriteLine($"\n\nSorry, entry #{id} doesn't exist. Please try again: \n");
+					id = Console.ReadLine();
 
 					while (!Regex.IsMatch(id, @"^\d+$"))
 					{
@@ -345,59 +370,41 @@ namespace HabitTracker
 							break;
 						}
 					}
-
-						while (!found)
-						{
-							Console.WriteLine($"\n\nSorry, entry #{id} doesn't exist. Please try again: \n");
-							id = Console.ReadLine();
-
-							while (!Regex.IsMatch(id, @"^\d+$"))
-							{
-								Console.WriteLine("Sorry, please enter numbers only: \n");
-								id = Console.ReadLine();
-							}
-
-						foreach (var entry in entries)
-							{
-								if (entry.Id == Int32.Parse(id))
-								{
-									found = true;
-									break;
-								}
-							}
-						}
-
-					Console.Write("\n\nAnd what would you like to change the Quantity to? ");
-					var quantity = Console.ReadLine();
-
-					while(!Int32.TryParse(quantity, out _) || Convert.ToInt32(quantity) < 0)
-					{
-						Console.WriteLine("Sorry, please enter whole numbers only: \n");
-						quantity = Console.ReadLine();
-					}
-
-					string date = DateTime.Now.ToString("dd-MM-yyyy");
-
-					con.Open();
-
-					tableCmd.CommandText =
-						$"UPDATE drinking_water SET Date = '{date}', Quantity = {quantity} WHERE Id = {id}";
-
-					int rowCount = tableCmd.ExecuteNonQuery();
-
-					if (rowCount == 0)
-					{
-						Console.WriteLine($"\n\nRecord with Id {id} doesn't exist. \n\n");
-						Update();
-					}
-
-					con.Close();
-
-
-					Console.WriteLine($"\nEntry with Id {id} had it's quantity successfully changed to {quantity}!!");
-					Console.WriteLine("\nPress any key to continue...");
-					Console.ReadKey();
 				}
+
+				Console.Write("\n\nAnd what would you like to change the Quantity to? (0 for main menu) ");
+				var quantity = Console.ReadLine();
+
+				while (!Int32.TryParse(quantity, out _) || Convert.ToInt32(id) < 0)
+				{
+					Console.WriteLine("\n\nInvalid number.  Please try again: \n");
+					quantity = Console.ReadLine();
+				}
+
+				if (Int32.Parse(quantity) == 0)
+					GetUserInput();
+
+				string date = DateTime.Now.ToString("dd-MM-yyyy");
+
+				con.Open();
+
+				tableCmd.CommandText =
+					$"UPDATE drinking_water SET Date = '{date}', Quantity = {quantity} WHERE Id = {id}";
+
+				int rowCount = tableCmd.ExecuteNonQuery();
+
+				if (rowCount == 0)
+				{
+					Console.WriteLine($"\n\nRecord with Id {id} doesn't exist. \n\n");
+					Update();
+				}
+
+				con.Close();
+
+				Console.WriteLine($"\nEntry with Id {id} had it's quantity successfully changed to {quantity}!!");
+				Console.WriteLine("\nPress any key to continue...");
+				Console.ReadKey();
 			}
+		}
 	}
 }
